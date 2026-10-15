@@ -1,0 +1,357 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:AzureBlobDownloader.App.ViewModels"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="1000" d:DesignHeight="680"
+        x:Class="AzureBlobDownloader.App.Views.MainWindow"
+        x:DataType="vm:MainViewModel"
+        Icon="/Assets/app-icon.ico"
+        Title="{Binding Title}"
+        Width="1000" Height="700"
+        MinWidth="720" MinHeight="480"
+        WindowStartupLocation="CenterScreen">
+
+  <Design.DataContext>
+    <vm:MainViewModel />
+  </Design.DataContext>
+
+  <Window.Styles>
+    <!-- Compact rows for the tree list. -->
+    <Style Selector="ListBox#Tree ListBoxItem">
+      <Setter Property="Padding" Value="8,0" />
+      <Setter Property="MinHeight" Value="0" />
+    </Style>
+    <!-- Expander arrow: points right, rotates down when open. -->
+    <Style Selector="ToggleButton.expander">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderThickness" Value="0" />
+      <Setter Property="Padding" Value="0" />
+      <Setter Property="Width" Value="22" />
+      <Setter Property="Height" Value="22" />
+      <Setter Property="MinWidth" Value="0" />
+      <Setter Property="MinHeight" Value="0" />
+    </Style>
+    <Style Selector="ToggleButton.expander Path">
+      <Setter Property="Fill" Value="{DynamicResource SystemControlForegroundBaseMediumBrush}" />
+      <Setter Property="Width" Value="5" />
+      <Setter Property="Height" Value="10" />
+      <Setter Property="HorizontalAlignment" Value="Center" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+      <Setter Property="RenderTransform" Value="rotate(0deg)" />
+    </Style>
+    <Style Selector="ToggleButton.expander:checked Path">
+      <Setter Property="RenderTransform" Value="rotate(90deg)" />
+    </Style>
+    <Style Selector="ToggleButton.expander:checked /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="Transparent" />
+    </Style>
+    <Style Selector="CheckBox.row">
+      <Setter Property="MinWidth" Value="0" />
+      <Setter Property="Padding" Value="0" />
+      <Setter Property="Margin" Value="2,0,6,0" />
+    </Style>
+    <Style Selector="Border.warning">
+      <Setter Property="BorderBrush" Value="{DynamicResource SystemControlErrorTextForegroundBrush}" />
+    </Style>
+    <Style Selector="Button.count">
+      <Setter Property="Padding" Value="8,1" />
+      <Setter Property="FontSize" Value="12" />
+      <Setter Property="MinHeight" Value="0" />
+    </Style>
+  </Window.Styles>
+
+  <Window.DataTemplates>
+
+    <!-- Download screen -->
+    <DataTemplate DataType="vm:DownloadViewModel">
+      <DockPanel>
+        <StackPanel DockPanel.Dock="Top" Spacing="8">
+          <TextBlock Text="{Binding HeaderText}" FontSize="18" FontWeight="SemiBold" TextWrapping="Wrap" />
+          <ProgressBar Value="{Binding Percent}" Minimum="0" Maximum="100" Height="8" />
+          <Grid ColumnDefinitions="*,Auto">
+            <TextBlock Grid.Column="0" Text="{Binding ProgressText}" />
+            <TextBlock Grid.Column="1" Text="{Binding SpeedText}" />
+          </Grid>
+          <Border Padding="10,8" CornerRadius="4" BorderThickness="1"
+                  BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
+                  Classes.warning="{Binding HasWarning}">
+            <TextBlock Text="{Binding StateText}" TextWrapping="Wrap" />
+          </Border>
+
+          <!-- Sign-in expired during the download -->
+          <Border IsVisible="{Binding NeedsSignIn}" Padding="12" CornerRadius="4" BorderThickness="2"
+                  BorderBrush="{DynamicResource SystemControlHighlightAccentBrush}">
+            <StackPanel Spacing="8">
+              <TextBlock Text="Your sign-in has expired. Sign in again with the same account to continue; nothing downloaded so far is lost."
+                         TextWrapping="Wrap" FontWeight="SemiBold" />
+              <TextBlock Text="{Binding SignInError}" TextWrapping="Wrap"
+                         Foreground="{DynamicResource SystemControlErrorTextForegroundBrush}"
+                         IsVisible="{Binding SignInError, Converter={x:Static ObjectConverters.IsNotNull}}" />
+              <StackPanel Orientation="Horizontal" Spacing="8">
+                <Button Content="Sign in" Command="{Binding SignInCommand}" Classes="accent" />
+                <Button Content="Not now" Command="{Binding NotNowCommand}" ToolTip.Tip="Pause the download; press Resume later to sign in" />
+              </StackPanel>
+            </StackPanel>
+          </Border>
+
+          <StackPanel Orientation="Horizontal" Spacing="8">
+            <Button Content="Pause" Command="{Binding PauseCommand}" IsVisible="{Binding IsActive}" />
+            <Button Content="Resume" Command="{Binding ResumeCommand}" IsVisible="{Binding IsPaused}" Classes="accent" />
+            <Button Content="Cancel" Command="{Binding CancelCommand}" IsVisible="{Binding !IsFinished}" />
+            <Button Content="{Binding FailedCount, StringFormat='Retry failed ({0})'}" Command="{Binding RetryFailedCommand}"
+                    IsVisible="{Binding HasFailures}" />
+            <Button Content="Open folder" Command="{Binding OpenFolderCommand}" />
+            <Button Content="Back to files" Command="{Binding CloseCommand}" IsVisible="{Binding !IsActive}" />
+          </StackPanel>
+        </StackPanel>
+
+        <Grid RowDefinitions="Auto,Auto,Auto,*" Margin="0,16,0,0">
+          <TextBlock Grid.Row="0" Text="In progress" Opacity="0.7" Margin="0,0,0,4" IsVisible="{Binding IsActive}" />
+          <ListBox Grid.Row="1" ItemsSource="{Binding ActiveFiles}" IsVisible="{Binding IsActive}" MaxHeight="360">
+            <ListBox.ItemTemplate>
+              <DataTemplate x:DataType="vm:ActiveFileRow">
+                <Grid ColumnDefinitions="*,180,170" ColumnSpacing="12" Height="28">
+                  <TextBlock Grid.Column="0" Text="{Binding Name}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                  <ProgressBar Grid.Column="1" Value="{Binding Percent}" Minimum="0" Maximum="100" VerticalAlignment="Center" />
+                  <TextBlock Grid.Column="2" Text="{Binding SizeText}" VerticalAlignment="Center" TextAlignment="Right" />
+                </Grid>
+              </DataTemplate>
+            </ListBox.ItemTemplate>
+          </ListBox>
+          <TextBlock Grid.Row="2" Text="Files that could not be downloaded" FontWeight="SemiBold" Margin="0,12,0,4"
+                     IsVisible="{Binding HasFailures}" />
+          <ListBox Grid.Row="3" ItemsSource="{Binding FailedFiles}" IsVisible="{Binding HasFailures}" VerticalAlignment="Top">
+            <ListBox.ItemTemplate>
+              <DataTemplate x:DataType="vm:FailedFileRow">
+                <StackPanel Margin="0,4">
+                  <TextBlock Text="{Binding Name}" TextTrimming="CharacterEllipsis" />
+                  <TextBlock Text="{Binding Error}" FontSize="12" Opacity="0.75" TextWrapping="Wrap" />
+                </StackPanel>
+              </DataTemplate>
+            </ListBox.ItemTemplate>
+          </ListBox>
+        </Grid>
+      </DockPanel>
+    </DataTemplate>
+
+    <!-- Pre-flight report -->
+    <DataTemplate DataType="vm:PreflightViewModel">
+      <DockPanel MaxHeight="560">
+        <TextBlock DockPanel.Dock="Top" Text="Before the download starts" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,8" />
+        <TextBlock DockPanel.Dock="Top" Text="{Binding SummaryText}" TextWrapping="Wrap" />
+        <ItemsControl DockPanel.Dock="Top" ItemsSource="{Binding Notes}" Margin="0,6,0,0">
+          <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="x:String">
+              <TextBlock Text="{Binding}" TextWrapping="Wrap" Margin="0,2" />
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+        <Border DockPanel.Dock="Top" Margin="0,12,0,0" Padding="10,8" CornerRadius="4" BorderThickness="1"
+                BorderBrush="{DynamicResource SystemControlErrorTextForegroundBrush}"
+                IsVisible="{Binding BlockingProblem, Converter={x:Static ObjectConverters.IsNotNull}}">
+          <TextBlock Text="{Binding BlockingProblem}" TextWrapping="Wrap" FontWeight="SemiBold" />
+        </Border>
+        <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8" Margin="0,16,0,0">
+          <Button Content="Start download" Command="{Binding StartCommand}" Classes="accent" IsVisible="{Binding CanStart}" />
+          <Button Content="Back" Command="{Binding BackCommand}" />
+        </StackPanel>
+        <TextBlock DockPanel.Dock="Bottom" Text="{Binding MoreIssuesText}" Opacity="0.7" Margin="0,4,0,0"
+                   IsVisible="{Binding MoreIssuesText, Converter={x:Static ObjectConverters.IsNotNull}}" />
+        <Grid RowDefinitions="Auto,*" Margin="0,12,0,0" IsVisible="{Binding HasIssues}">
+          <TextBlock Grid.Row="0" Text="Some files need attention:" FontWeight="SemiBold" Margin="0,0,0,4" />
+          <ListBox Grid.Row="1" ItemsSource="{Binding Issues}">
+            <ListBox.ItemTemplate>
+              <DataTemplate x:DataType="vm:PreflightIssueRow">
+                <Grid ColumnDefinitions="80,*" Margin="0,3">
+                  <TextBlock Grid.Column="0" Text="{Binding KindText}" FontWeight="SemiBold" />
+                  <StackPanel Grid.Column="1">
+                    <TextBlock Text="{Binding BlobName}" TextTrimming="CharacterEllipsis" />
+                    <TextBlock Text="{Binding Message}" FontSize="12" Opacity="0.75" TextWrapping="Wrap" />
+                  </StackPanel>
+                </Grid>
+              </DataTemplate>
+            </ListBox.ItemTemplate>
+          </ListBox>
+        </Grid>
+      </DockPanel>
+    </DataTemplate>
+
+    <!-- Setup: Tenant ID and Client ID -->
+    <DataTemplate DataType="vm:SetupViewModel">
+      <StackPanel Spacing="10" Width="560">
+        <TextBlock Text="{Binding Heading}" FontSize="18" FontWeight="SemiBold" />
+        <TextBlock Text="{Binding IntroText}" TextWrapping="Wrap" />
+
+        <StackPanel Spacing="4" Margin="0,6,0,0">
+          <TextBlock Text="Organisation domain or Tenant ID" FontWeight="SemiBold" />
+          <TextBox Text="{Binding TenantIdText}" PlaceholderText="e.g. contoso.com, or a Tenant ID like 12345678-abcd-1234-abcd-1234567890ab" />
+          <TextBlock Text="{Binding TenantIdError}" FontSize="12" TextWrapping="Wrap"
+                     Foreground="{DynamicResource SystemControlErrorTextForegroundBrush}"
+                     IsVisible="{Binding TenantIdError, Converter={x:Static ObjectConverters.IsNotNull}}" />
+        </StackPanel>
+
+        <StackPanel Spacing="4">
+          <TextBlock Text="Client ID (also called Application ID)" FontWeight="SemiBold" />
+          <TextBox Text="{Binding ClientIdText}" PlaceholderText="e.g. 12345678-abcd-1234-abcd-1234567890ab" />
+          <TextBlock Text="{Binding ClientIdError}" FontSize="12" TextWrapping="Wrap"
+                     Foreground="{DynamicResource SystemControlErrorTextForegroundBrush}"
+                     IsVisible="{Binding ClientIdError, Converter={x:Static ObjectConverters.IsNotNull}}" />
+        </StackPanel>
+
+        <TextBlock Text="{Binding SaveError}" TextWrapping="Wrap"
+                   Foreground="{DynamicResource SystemControlErrorTextForegroundBrush}"
+                   IsVisible="{Binding SaveError, Converter={x:Static ObjectConverters.IsNotNull}}" />
+        <TextBlock Text="{Binding SavePathText}" FontSize="12" Opacity="0.7" TextWrapping="Wrap"
+                   IsVisible="{Binding SavePathText, Converter={x:Static ObjectConverters.IsNotNull}}" />
+
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8" Margin="0,6,0,0">
+          <ProgressBar IsIndeterminate="True" Width="80" IsVisible="{Binding IsSaving}" VerticalAlignment="Center" />
+          <Button Content="Save" Command="{Binding SaveCommand}" Classes="accent" IsDefault="True" />
+          <Button Content="Cancel" Command="{Binding CancelCommand}" IsVisible="{Binding CanCancel}" IsCancel="True" />
+        </StackPanel>
+      </StackPanel>
+    </DataTemplate>
+
+  </Window.DataTemplates>
+
+  <Panel>
+  <DockPanel Margin="20">
+
+    <!-- Header: title and account -->
+    <Grid DockPanel.Dock="Top" ColumnDefinitions="Auto,*,Auto" Margin="0,0,0,16">
+      <Image Grid.Column="0" Source="/Assets/app-icon.png" Width="36" Height="36" />
+      <TextBlock Grid.Column="1" Text="{Binding Title}" FontSize="22" FontWeight="SemiBold"
+                 VerticalAlignment="Center" Margin="12,0" />
+      <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+        <TextBlock Text="{Binding UserText}" VerticalAlignment="Center" />
+        <Button Content="Switch account" Command="{Binding SwitchAccountCommand}" IsVisible="{Binding IsSignedIn}" />
+        <Button Content="Sign out" Command="{Binding SignOutCommand}" IsVisible="{Binding IsSignedIn}" />
+      </StackPanel>
+    </Grid>
+
+    <!-- Configuration problem -->
+    <Border DockPanel.Dock="Top" IsVisible="{Binding HasConfigError}" Margin="0,0,0,12"
+            BorderBrush="{DynamicResource SystemControlErrorTextForegroundBrush}" BorderThickness="1" CornerRadius="4" Padding="12">
+      <SelectableTextBlock Text="{Binding ConfigError}" TextWrapping="Wrap" />
+    </Border>
+
+    <!-- Link -->
+    <Grid DockPanel.Dock="Top" ColumnDefinitions="*,Auto,Auto,Auto" ColumnSpacing="8">
+      <TextBox Grid.Column="0" Text="{Binding LinkText}"
+               PlaceholderText="Paste the link you received, e.g. https://contosodata.blob.core.windows.net/shared-files" />
+      <Button Grid.Column="1" Content="Sign in and open" Command="{Binding OpenCommand}" IsDefault="True" Classes="accent" />
+      <Button Grid.Column="2" Content="Refresh" Command="{Binding RefreshCommand}" IsVisible="{Binding Tree.HasRows}"
+              ToolTip.Tip="List the shared folder again (clears the selection)" />
+      <Button Grid.Column="3" Content="Cancel" Command="{Binding CancelCommand}" IsVisible="{Binding IsBusy}" />
+    </Grid>
+    <TextBlock DockPanel.Dock="Top" Text="{Binding LinkMessage}" TextWrapping="Wrap" Margin="2,4,0,0"
+               IsVisible="{Binding LinkMessage, Converter={x:Static ObjectConverters.IsNotNull}}"
+               Foreground="{DynamicResource SystemControlErrorTextForegroundBrush}" />
+
+    <!-- Error -->
+    <Border DockPanel.Dock="Top" IsVisible="{Binding HasError}" Margin="0,12,0,0"
+            BorderBrush="{DynamicResource SystemControlErrorTextForegroundBrush}" BorderThickness="1" CornerRadius="4" Padding="12">
+      <StackPanel Spacing="4">
+        <TextBlock Text="{Binding Error.Title, FallbackValue=''}" FontWeight="SemiBold" />
+        <SelectableTextBlock Text="{Binding Error.Message, FallbackValue=''}" TextWrapping="Wrap" />
+        <SelectableTextBlock Text="{Binding ErrorCodeText}" Opacity="0.7" FontSize="12"
+                             IsVisible="{Binding ErrorCodeText, Converter={x:Static ObjectConverters.IsNotNull}}" />
+        <TextBlock Text="{Binding SupportText}" TextWrapping="Wrap"
+                   IsVisible="{Binding SupportText, Converter={x:Static ObjectConverters.IsNotNull}}" />
+        <Button Content="Change settings…" Command="{Binding ChangeSettingsCommand}" Margin="0,4,0,0"
+                IsVisible="{Binding ErrorSuggestsSettings}" />
+      </StackPanel>
+    </Border>
+
+    <!-- Status, connection details -->
+    <StackPanel DockPanel.Dock="Bottom" Spacing="2" Margin="0,8,0,0">
+      <ProgressBar IsIndeterminate="True" IsVisible="{Binding IsBusy}" Margin="0,0,0,4" />
+      <TextBlock Text="{Binding StatusText}" TextWrapping="Wrap" Opacity="0.8" />
+      <Expander Header="Connection details" Margin="0,4,0,0" HorizontalAlignment="Stretch">
+        <StackPanel Spacing="2">
+          <SelectableTextBlock Text="{Binding UserDetailText}" FontSize="12" TextWrapping="Wrap" />
+          <SelectableTextBlock Text="{Binding SignInMethodText}" FontSize="12" TextWrapping="Wrap" />
+          <SelectableTextBlock Text="{Binding CacheText}" FontSize="12" TextWrapping="Wrap" />
+          <SelectableTextBlock Text="{Binding SettingsText}" FontSize="12" TextWrapping="Wrap" />
+          <Button Content="Change settings…" Command="{Binding ChangeSettingsCommand}" Margin="0,6,0,0"
+                  ToolTip.Tip="Change the Tenant ID and Client ID (signs you out)" />
+        </StackPanel>
+      </Expander>
+    </StackPanel>
+
+    <Panel>
+
+    <!-- Browse: tree, selection and the Download button -->
+    <DockPanel IsVisible="{Binding IsBrowsing}">
+    <Grid DockPanel.Dock="Bottom" ColumnDefinitions="*,Auto" Margin="0,8,0,0" IsVisible="{Binding Tree.HasRows}">
+      <TextBlock Grid.Column="0" Text="{Binding Tree.SelectionText}" VerticalAlignment="Center" FontWeight="SemiBold" />
+      <Button Grid.Column="1" Content="Download…" Classes="accent" Command="{Binding DownloadCommand}"
+              ToolTip.Tip="Choose a folder and download the ticked files and folders" />
+    </Grid>
+
+    <!-- Tree -->
+    <Grid RowDefinitions="Auto,Auto,*" Margin="0,16,0,0">
+      <TextBlock Grid.Row="0" Text="{Binding Tree.LocationText}" Opacity="0.7" Margin="0,0,0,6" TextTrimming="CharacterEllipsis" />
+      <Grid Grid.Row="1" ColumnDefinitions="*,120,150,60" Margin="8,0,8,4" Opacity="0.7" IsVisible="{Binding Tree.HasRows}">
+        <TextBlock Grid.Column="0" Text="Name" Margin="52,0,0,0" />
+        <TextBlock Grid.Column="1" Text="Size" TextAlignment="Right" Margin="0,0,12,0" />
+        <TextBlock Grid.Column="2" Text="Modified" />
+        <TextBlock Grid.Column="3" Text="MD5" ToolTip.Tip="Whether downloads can be checked against an MD5 hash (otherwise by size)" />
+      </Grid>
+      <ListBox Grid.Row="2" x:Name="Tree" ItemsSource="{Binding Tree.Rows}" SelectedItem="{Binding Tree.SelectedRow}"
+               SelectionMode="Single" DoubleTapped="OnTreeDoubleTapped" KeyDown="OnTreeKeyDown">
+        <ListBox.ItemTemplate>
+          <DataTemplate x:DataType="vm:TreeRow">
+            <Grid ColumnDefinitions="*,120,150,60" Height="30" Background="Transparent" ToolTip.Tip="{Binding DetailText}">
+              <DockPanel Grid.Column="0" Margin="{Binding Indent}">
+                <Panel DockPanel.Dock="Left" Width="22">
+                  <ToggleButton Classes="expander" IsChecked="{Binding IsExpanded}" IsVisible="{Binding CanExpand}"
+                                ToolTip.Tip="Open or close this folder">
+                    <Path Data="M 0 0 L 5 5 L 0 10 Z" RenderTransformOrigin="50%,50%" />
+                  </ToggleButton>
+                </Panel>
+                <CheckBox DockPanel.Dock="Left" Classes="row" IsChecked="{Binding IsChecked}" VerticalAlignment="Center" />
+                <TextBlock Text="{Binding Name}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+              </DockPanel>
+              <Panel Grid.Column="1" Margin="0,0,12,0">
+                <TextBlock Text="{Binding SizeText}" TextAlignment="Right" VerticalAlignment="Center" />
+                <Button Classes="count" Content="Count" Command="{Binding CountCommand}" IsVisible="{Binding ShowCountButton}"
+                        HorizontalAlignment="Right" VerticalAlignment="Center"
+                        ToolTip.Tip="Count the files and total size in this folder" />
+              </Panel>
+              <TextBlock Grid.Column="2" Text="{Binding ModifiedText}" VerticalAlignment="Center" />
+              <TextBlock Grid.Column="3" Text="{Binding Md5Text}" VerticalAlignment="Center" />
+            </Grid>
+          </DataTemplate>
+        </ListBox.ItemTemplate>
+      </ListBox>
+    </Grid>
+    </DockPanel>
+
+    <!-- Download screen -->
+    <ContentControl Content="{Binding Download}" Margin="0,16,0,0"
+                    IsVisible="{Binding Download, Converter={x:Static ObjectConverters.IsNotNull}}" />
+
+    </Panel>
+
+  </DockPanel>
+
+  <!-- Pre-flight report, over everything -->
+  <Border IsVisible="{Binding Preflight, Converter={x:Static ObjectConverters.IsNotNull}}" Background="#99000000">
+    <Border Background="{DynamicResource SystemControlBackgroundAltHighBrush}" CornerRadius="8" Padding="24"
+            MaxWidth="780" Margin="40" HorizontalAlignment="Center" VerticalAlignment="Center">
+      <ContentControl Content="{Binding Preflight}" />
+    </Border>
+  </Border>
+
+  <!-- Setup, over everything -->
+  <Border IsVisible="{Binding Setup, Converter={x:Static ObjectConverters.IsNotNull}}" Background="#99000000">
+    <Border Background="{DynamicResource SystemControlBackgroundAltHighBrush}" CornerRadius="8" Padding="24"
+            Margin="40" HorizontalAlignment="Center" VerticalAlignment="Center">
+      <ContentControl Content="{Binding Setup}" />
+    </Border>
+  </Border>
+
+  </Panel>
+</Window>

@@ -1,0 +1,6 @@
+{
+  "TenantId": "",
+  "ClientId": "",
+  "AllowedHosts": [ "*.blob.core.windows.net" ],
+  "UseWindowsBroker": true
+}

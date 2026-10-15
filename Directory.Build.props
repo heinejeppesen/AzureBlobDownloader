@@ -1,0 +1,25 @@
+<Project>
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <Deterministic>true</Deterministic>
+
+    <Product>Azure Blob Downloader</Product>
+    <Copyright>Copyright (c) 2026 Heine Jeppesen. MIT License.</Copyright>
+    <Version>0.1.0</Version>
+  </PropertyGroup>
+
+  <!--
+    Security: every restore checks all packages, including indirect ones, against the GitHub Advisory
+    Database. High and critical vulnerabilities fail the build; low and moderate ones are warnings.
+  -->
+  <PropertyGroup>
+    <NuGetAudit>true</NuGetAudit>
+    <NuGetAuditMode>all</NuGetAuditMode>
+    <NuGetAuditLevel>low</NuGetAuditLevel>
+    <WarningsAsErrors>$(WarningsAsErrors);NU1903;NU1904</WarningsAsErrors>
+  </PropertyGroup>
+</Project>

@@ -1,0 +1,24 @@
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path=".editorconfig" />
+    <File Path="Directory.Build.props" />
+    <File Path="Directory.Packages.props" />
+    <File Path="global.json" />
+    <File Path="LICENSE" />
+    <File Path="README.md" />
+    <File Path="SECURITY.md" />
+    <File Path="docs/ADMIN.md" />
+    <File Path="docs/CI.md" />
+    <File Path="docs/DESIGN.md" />
+    <File Path="docs/INSTALL.md" />
+    <File Path="docs/TEST-PLAN.md" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/AzureBlobDownloader.App/AzureBlobDownloader.App.csproj" />
+    <Project Path="src/AzureBlobDownloader.Core/AzureBlobDownloader.Core.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/AzureBlobDownloader.App.Tests/AzureBlobDownloader.App.Tests.csproj" />
+    <Project Path="tests/AzureBlobDownloader.Core.Tests/AzureBlobDownloader.Core.Tests.csproj" />
+  </Folder>
+</Solution>

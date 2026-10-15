@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256">
+  <!-- Azure Blob Downloader placeholder icon: cloud with a downward arrow. -->
+  <g fill="#0078D4">
+    <rect x="20" y="118" width="216" height="94" rx="47" ry="47"/>
+    <circle cx="88" cy="122" r="52"/>
+    <circle cx="152" cy="104" r="66"/>
+  </g>
+  <g fill="none" stroke="#FFFFFF" stroke-width="22" stroke-linecap="round" stroke-linejoin="round">
+    <line x1="128" y1="82" x2="128" y2="178"/>
+    <polyline points="90,142 128,180 166,142"/>
+  </g>
+</svg>

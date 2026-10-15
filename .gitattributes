@@ -1,0 +1,19 @@
+# Line endings: LF in the repository, the platform's native line endings in working copies.
+# Same result on Windows, macOS and Linux, whatever core.autocrlf is set to.
+* text=auto
+
+# Shell scripts run on macOS/Linux (CI, packaging) must keep LF even when checked out on Windows.
+*.sh text eol=lf
+
+# Windows batch files need CRLF.
+*.cmd text eol=crlf
+*.bat text eol=crlf
+
+# Binary assets: never touch.
+*.ico binary
+*.icns binary
+*.png binary
+*.jpg binary
+*.dmg binary
+*.zip binary
+*.gz binary
