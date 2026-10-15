@@ -3,6 +3,11 @@
 Notable changes per release. Versions follow [Semantic Versioning](https://semver.org).
 The release workflow uses the section for the version being released as its release notes.
 
+## [Unreleased]
+
+- Windows: native libraries are loaded only from the app's own folder and System32, never from the current folder
+  or `PATH`, so a planted DLL cannot be loaded into the app.
+
 ## [1.0.0] - 2026-10-15
 
 First public release.

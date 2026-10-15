@@ -12,7 +12,7 @@ Everything is in one workflow file: [`.github/workflows/build.yml`](../.github/w
 | Microsoft-hosted agent (`vmImage`) | GitHub-hosted runner (`runs-on`) | `windows-latest`, `macos-latest`, `ubuntu-latest` |
 | Strategy matrix | `strategy.matrix` | Tests on 3 OS; packages for 4 targets |
 | Trigger (`trigger:`, `pr:`, `schedules:`) | `on:` (`push`, `pull_request`, `schedule`, `workflow_dispatch`) | see the top of `build.yml` |
-| Tasks (`DotNetCoreCLI@2`, …) | Actions (`uses: owner/name@version`) or plain `run:` commands | `actions/checkout`, `actions/setup-dotnet`, upload/download artifact; the rest is `dotnet`/scripts |
+| Tasks (`DotNetCoreCLI@2`, …) | Actions (`uses: owner/name@version`) or plain `run:` commands | `actions/checkout`, `actions/setup-dotnet`, upload/download artifact, pinned to commit SHAs (see [Security updates](#security-updates)); the rest is `dotnet`/scripts |
 | Pipeline artifacts | Artifacts (on the run page) | One per package file, kept 30 days |
 | Releases / GitHub release task | GitHub Releases | Draft release created on `v*` tags |
 | Variable groups / secret variables | Repository *Secrets and variables* | None needed yet (signing will need some) |
@@ -53,9 +53,9 @@ notarization; `build/package-macos.sh` already signs with the hardened runtime w
 
 ## Making a release
 
-1. Add a section to [`CHANGELOG.md`](../CHANGELOG.md), e.g. `## [1.1.0] - 2026-12-01` with what changed; it becomes
-   the top of the release notes (the release fails without it). Set `<Version>` in `Directory.Build.props` to the
-   same version. Commit and push, and wait for the run to be green.
+1. In [`CHANGELOG.md`](../CHANGELOG.md), rename `## [Unreleased]` to the version and date, e.g.
+   `## [1.1.0] - 2026-12-01`; it becomes the top of the release notes (the release fails without it). Set `<Version>`
+   in `Directory.Build.props` to the same version. Commit and push, and wait for the run to be green.
 2. Tag that commit and push the tag:
    ```bash
    git tag v1.1.0
@@ -67,7 +67,8 @@ notarization; `build/package-macos.sh` already signs with the hardened runtime w
    (changelog section + [`.github/release-notes.md`](../.github/release-notes.md) + GitHub's change list).
    Repository → **Releases** → the draft → check text and files → **Publish release**.
 4. Set `<Version>` to the next planned version (e.g. `1.1.1`), so development builds are `1.1.1-ci.<run>` and never
-   look older than the release.
+   look older than the release, and add an empty `## [Unreleased]` section to the changelog. Note user-visible
+   changes there as they are made.
 
 Versions follow [Semantic Versioning](https://semver.org): bug fixes raise the last number (1.0.1), new features the
 middle one (1.1.0), changes that break existing setups the first one (2.0.0).
@@ -83,6 +84,10 @@ middle one (1.1.0), changes that break existing setups the first one (2.0.0).
 - **Dependabot security alerts and updates** (repository *Settings → Advanced Security*): GitHub e-mails you about a
   vulnerable dependency and opens a pull request that updates it. The pull request runs the full CI; merge when green.
 - Updating packages yourself: change the version in `Directory.Packages.props`, build and test locally, push.
+- **Actions are pinned to a commit SHA** (`uses: actions/checkout@<sha> # v7.0.1`), so a moved or hijacked tag cannot
+  change what runs, including in the release job that may write. To update one, look up the commit of the new version
+  (`gh api repos/actions/checkout/commits/v7.0.2 --jq .sha`) and replace both the SHA and the comment. Dependabot
+  security updates also cover actions and keep this format.
 - The .NET runtime is bundled in every package and comes from the newest .NET 10 SDK on the runner, so any rebuild after
   Microsoft's monthly patch day includes the latest .NET security fixes. Customers get them by installing the new version.
 
