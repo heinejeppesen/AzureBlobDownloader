@@ -27,3 +27,6 @@ To check that a download is exactly the file built here, compare its SHA-256 che
 - Windows (PowerShell): `Get-FileHash .\<file> -Algorithm SHA256`
 - macOS: `shasum -a 256 <file>`
 - Linux: `sha256sum -c SHA256SUMS.txt --ignore-missing`
+
+Each package also has a signed build attestation that proves it was built by this repository's release workflow.
+With the [GitHub CLI](https://cli.github.com): `gh attestation verify <file> --repo {{REPOSITORY}}`

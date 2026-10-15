@@ -15,7 +15,9 @@ with a paid publisher certificate, so Windows and macOS show a warning the first
 
 Each release also has `SHA256SUMS.txt`. To check that a download is exactly the file built by this project,
 compare its checksum: `Get-FileHash .\<file> -Algorithm SHA256` (Windows PowerShell), `shasum -a 256 <file>`
-(macOS) or `sha256sum -c SHA256SUMS.txt --ignore-missing` (Linux).
+(macOS) or `sha256sum -c SHA256SUMS.txt --ignore-missing` (Linux). From 1.0.1 on, each package also has a signed
+build attestation; with the [GitHub CLI](https://cli.github.com):
+`gh attestation verify <file> --repo heinejeppesen/AzureBlobDownloader`.
 
 Development builds of every commit are on the Actions tab (Build → a run → *Artifacts*).
 

@@ -7,6 +7,8 @@ The release workflow uses the section for the version being released as its rele
 
 - Windows: native libraries are loaded only from the app's own folder and System32, never from the current folder
   or `PATH`, so a planted DLL cannot be loaded into the app.
+- Release packages come with signed build provenance attestations: `gh attestation verify <file> --repo
+  heinejeppesen/AzureBlobDownloader` proves a file was built by this repository's release workflow.
 
 ## [1.0.0] - 2026-10-15
 

@@ -26,3 +26,6 @@ Useful background when assessing a finding (details in [docs/DESIGN.md](docs/DES
   text, and never written to logs.
 - Downloaded files never end up outside the chosen folder (unsafe names such as `..` are skipped).
 - Dependencies are checked against the GitHub Advisory Database on every build and weekly.
+- Release packages are built only by GitHub Actions and come with SHA-256 checksums and signed build provenance
+  attestations (`gh attestation verify <file> --repo heinejeppesen/AzureBlobDownloader`); the workflow's
+  actions are pinned to commit SHAs.

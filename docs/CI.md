@@ -16,7 +16,7 @@ Everything is in one workflow file: [`.github/workflows/build.yml`](../.github/w
 | Pipeline artifacts | Artifacts (on the run page) | One per package file, kept 30 days |
 | Releases / GitHub release task | GitHub Releases | Draft release created on `v*` tags |
 | Variable groups / secret variables | Repository *Secrets and variables* | None needed yet (signing will need some) |
-| Service connections | `permissions:` + the automatic `GITHUB_TOKEN`, or secrets | Read-only by default; only the release job may write |
+| Service connections | `permissions:` + the automatic `GITHUB_TOKEN`, or secrets | Read-only by default; only the release job may write (and sign attestations via `id-token`) |
 | Dependabot (Azure Repos: extension) | Dependabot, built in | Security alerts and updates (repository settings) |
 
 ## Everyday use
@@ -32,7 +32,7 @@ Everything is in one workflow file: [`.github/workflows/build.yml`](../.github/w
 | Event | Tests (3 OS) | Packages (4 targets) | Draft release |
 |---|---|---|---|
 | Push to `main`, pull request, manual run | yes | yes | – |
-| Tag `v1.2.3` | yes | yes, version 1.2.3 | yes, with `SHA256SUMS.txt` |
+| Tag `v1.2.3` | yes | yes, version 1.2.3 | yes, with `SHA256SUMS.txt` and attestations |
 | Weekly schedule (Monday 05:17 UTC) | yes, as a security check | – | – |
 
 Versions: tag builds use the tag (`v1.1.0` → `1.1.0`); all other builds are `<Version in Directory.Build.props>-ci.<run number>`.
@@ -63,8 +63,9 @@ notarization; `build/package-macos.sh` already signs with the hardened runtime w
    ```bash
    git push origin v1.1.0
    ```
-3. The run builds version 1.1.0 and creates a **draft** release with all packages, `SHA256SUMS.txt` and the notes
-   (changelog section + [`.github/release-notes.md`](../.github/release-notes.md) + GitHub's change list).
+3. The run builds version 1.1.0, signs a build provenance attestation for every package (repository → **Actions**
+   → *Attestations*) and creates a **draft** release with all packages, `SHA256SUMS.txt` and the notes (changelog
+   section + [`.github/release-notes.md`](../.github/release-notes.md) + GitHub's change list).
    Repository → **Releases** → the draft → check text and files → **Publish release**.
 4. Set `<Version>` to the next planned version (e.g. `1.1.1`), so development builds are `1.1.1-ci.<run>` and never
    look older than the release, and add an empty `## [Unreleased]` section to the changelog. Note user-visible
