@@ -1,7 +1,8 @@
 # Installing Azure Blob Downloader
 
-The packages are not signed with a publisher certificate yet, so Windows and macOS show a warning the
-first time. Each package includes everything it needs; no .NET installation is required.
+Download from the **[latest release](https://github.com/heinejeppesen/AzureBlobDownloader/releases/latest)**.
+Each package includes everything it needs; no .NET installation is required. The packages are not signed
+with a paid publisher certificate, so Windows and macOS show a warning the first time (see below).
 
 | Platform | File | |
 |---|---|---|
@@ -12,11 +13,18 @@ first time. Each package includes everything it needs; no .NET installation is r
 | Linux x64 (Ubuntu 24.04 or newer) | `AzureBlobDownloader-<version>-linux-x64.AppImage` | single file |
 | Linux x64, no AppImage | `AzureBlobDownloader-<version>-linux-x64.tar.gz` | portable |
 
-Get them from the latest release, or from a CI run (GitHub → Actions → Build → a run → *Artifacts*).
+Each release also has `SHA256SUMS.txt`. To check that a download is exactly the file built by this project,
+compare its checksum: `Get-FileHash .\<file> -Algorithm SHA256` (Windows PowerShell), `shasum -a 256 <file>`
+(macOS) or `sha256sum -c SHA256SUMS.txt --ignore-missing` (Linux).
+
+Development builds of every commit are on the Actions tab (Build → a run → *Artifacts*).
 
 ## Windows
 
 1. Run the `-setup.exe`. If SmartScreen says "Windows protected your PC", choose **More info** → **Run anyway**.
+   If Windows blocks it with no way to continue, **Smart App Control** is on (some new Windows 11 PCs); it blocks
+   all apps without a paid signature, and the only way around it is to turn Smart App Control off
+   (*Windows Security → App & browser control*).
 2. The installer asks whether to install for you only (no admin rights needed, the default) or for all users.
 3. Start *Azure Blob Downloader* from the Start menu.
 

@@ -32,10 +32,10 @@ Everything is in one workflow file: [`.github/workflows/build.yml`](../.github/w
 | Event | Tests (3 OS) | Packages (4 targets) | Draft release |
 |---|---|---|---|
 | Push to `main`, pull request, manual run | yes | yes | – |
-| Tag `v1.2.3` | yes | yes, version 1.2.3 | yes |
+| Tag `v1.2.3` | yes | yes, version 1.2.3 | yes, with `SHA256SUMS.txt` |
 | Weekly schedule (Monday 05:17 UTC) | yes, as a security check | – | – |
 
-Versions: tag builds use the tag (`v0.2.0` → `0.2.0`); all other builds are `<Version in Directory.Build.props>-ci.<run number>`.
+Versions: tag builds use the tag (`v1.1.0` → `1.1.0`); all other builds are `<Version in Directory.Build.props>-ci.<run number>`.
 
 ## Packages
 
@@ -53,9 +53,24 @@ notarization; `build/package-macos.sh` already signs with the hardened runtime w
 
 ## Making a release
 
-1. Set `<Version>` in `Directory.Build.props`, commit and push.
-2. `git tag v0.2.0` and `git push origin v0.2.0`.
-3. When the run finishes: repository → **Releases** → the draft → check the text and files → **Publish release**.
+1. Add a section to [`CHANGELOG.md`](../CHANGELOG.md), e.g. `## [1.1.0] - 2026-12-01` with what changed; it becomes
+   the top of the release notes (the release fails without it). Set `<Version>` in `Directory.Build.props` to the
+   same version. Commit and push, and wait for the run to be green.
+2. Tag that commit and push the tag:
+   ```bash
+   git tag v1.1.0
+   ```
+   ```bash
+   git push origin v1.1.0
+   ```
+3. The run builds version 1.1.0 and creates a **draft** release with all packages, `SHA256SUMS.txt` and the notes
+   (changelog section + [`.github/release-notes.md`](../.github/release-notes.md) + GitHub's change list).
+   Repository → **Releases** → the draft → check text and files → **Publish release**.
+4. Set `<Version>` to the next planned version (e.g. `1.1.1`), so development builds are `1.1.1-ci.<run>` and never
+   look older than the release.
+
+Versions follow [Semantic Versioning](https://semver.org): bug fixes raise the last number (1.0.1), new features the
+middle one (1.1.0), changes that break existing setups the first one (2.0.0).
 
 ## Security updates
 

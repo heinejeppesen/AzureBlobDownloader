@@ -2,7 +2,7 @@
 # Packages a Linux publish folder as a tar.gz and an AppImage. Runs on Linux x64.
 #
 #   dotnet publish src/AzureBlobDownloader.App -c Release -r linux-x64 -o publish/linux-x64
-#   bash build/package-linux.sh publish/linux-x64 0.2.0 dist
+#   bash build/package-linux.sh publish/linux-x64 1.1.0 dist
 #
 # The AppImage uses the static type-2 runtime: it needs FUSE 3 (fusermount3), which Ubuntu 24.04 has,
 # but not libfuse2. Without FUSE it can still run with --appimage-extract-and-run.

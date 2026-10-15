@@ -2,7 +2,7 @@
 # Packages a macOS publish folder as "Azure Blob Downloader.app" inside a DMG. Runs on macOS only.
 #
 #   dotnet publish src/AzureBlobDownloader.App -c Release -r osx-arm64 -o publish/osx-arm64
-#   bash build/package-macos.sh publish/osx-arm64 0.2.0 0.2.0 42 dist
+#   bash build/package-macos.sh publish/osx-arm64 1.1.0 1.1.0 42 dist
 #
 # Signing: ad hoc by default (Apple silicon refuses unsigned code). Set MACOS_SIGN_IDENTITY to a
 # "Developer ID Application: …" identity in the keychain to sign with the hardened runtime instead
@@ -10,8 +10,8 @@
 set -euo pipefail
 
 publish_dir="$1"
-version="$2"          # e.g. 0.2.0 or 0.2.0-ci.17 (file name)
-short_version="$3"    # e.g. 0.2.0 (CFBundleShortVersionString, numbers only)
+version="$2"          # e.g. 1.1.0 or 1.1.0-ci.17 (file name)
+short_version="$3"    # e.g. 1.1.0 (CFBundleShortVersionString, numbers only)
 build_number="$4"     # e.g. 17 (CFBundleVersion)
 out_dir="${5:-dist}"
 

@@ -3,7 +3,7 @@
     Packages a Windows publish folder as a portable zip and an Inno Setup installer.
 .EXAMPLE
     dotnet publish src/AzureBlobDownloader.App -c Release -r win-x64 -o publish/win-x64
-    ./build/package-windows.ps1 -Rid win-x64 -PublishDir publish/win-x64 -Version 0.2.0
+    ./build/package-windows.ps1 -Rid win-x64 -PublishDir publish/win-x64 -Version 1.1.0
 #>
 param(
     [Parameter(Mandatory)] [ValidateSet('win-x64', 'win-arm64')] [string] $Rid,

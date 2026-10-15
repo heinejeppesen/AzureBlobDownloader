@@ -5,6 +5,13 @@ Azure experts. Paste the link you received, sign in with your own work account, 
 download it. A simpler alternative to Azure Storage Explorer when an organisation shares files with
 customers or partners (Microsoft Entra B2B guests).
 
+## Download
+
+**[Latest release](https://github.com/heinejeppesen/AzureBlobDownloader/releases/latest)**: Windows installer,
+macOS DMG and Linux AppImage. See [docs/INSTALL.md](docs/INSTALL.md) for which file to pick and the one-time
+warnings (the packages are not code-signed). The organisation that shares the files registers the app once first;
+see [docs/ADMIN.md](docs/ADMIN.md).
+
 ## Features
 
 - **Paste a link and go**: accepts container and folder links, also when copied from an e-mail (Outlook Safe
