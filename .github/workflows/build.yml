@@ -151,10 +151,27 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
+      # Each artifact is one package file (uploaded with archive: false). skip-decompress keeps the Windows
+      # .zip files as they are; without it they would be unpacked into dist.
       - uses: actions/download-artifact@v8
         with:
           path: dist
           merge-multiple: true
+          skip-decompress: true
+
+      - name: Check packages
+        working-directory: dist
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          expected="$(printf 'AzureBlobDownloader-%s-%s\n' \
+            "$version" linux-x64.AppImage "$version" linux-x64.tar.gz "$version" osx-arm64.dmg \
+            "$version" win-arm64-setup.exe "$version" win-arm64.zip "$version" win-x64-setup.exe "$version" win-x64.zip | sort)"
+          actual="$(ls -1 | sort)"
+          if [ "$actual" != "$expected" ]; then
+            echo "dist does not contain exactly the expected packages." >&2
+            diff <(echo "$expected") <(echo "$actual") >&2 || true
+            exit 1
+          fi
 
       # Lets users check that a download is exactly the file built here (the packages are not code-signed).
       - name: Checksums
